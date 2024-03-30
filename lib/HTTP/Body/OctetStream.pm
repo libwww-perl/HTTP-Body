@@ -45,6 +45,10 @@ sub spin {
 
 =back
 
+=head1 SUPPORT
+
+See L<HTTP::Body>
+
 =head1 AUTHOR
 
 Christian Hansen, C<ch@ngmedia.com>

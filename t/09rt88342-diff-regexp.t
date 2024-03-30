@@ -19,9 +19,10 @@ use File::Temp qw/ tempdir /;
 my $path = catdir( getcwd(), 't', 'data', 'multipart' );
 
 {
+  $HTTP::Body::MultiPart::file_temp_suffix = undef;
   $HTTP::Body::MultiPart::basename_regexp = qr/(\.\w+(?:\.\w+)*)$/;
 
-    my $uploads = uploads_for('015');
+  my $uploads = uploads_for('015');
 
 	{
 		my ($volume,$directories,$file) = File::Spec->splitpath( $uploads->{upload}{tempname} );	

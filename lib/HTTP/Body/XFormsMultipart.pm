@@ -88,6 +88,10 @@ sub handler {
 
 =back
 
+=head1 SUPPORT
+
+See L<HTTP::Body>
+
 =head1 AUTHOR
 
 Daniel Ruoso C<daniel@ruoso.com>
