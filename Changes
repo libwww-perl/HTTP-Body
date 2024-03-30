@@ -2,6 +2,11 @@ This file documents the revision history for Perl extension HTTP::Body.
 
 {{$NEXT}}
 
+1.23      2024-03-30 04:27:56+01:00 Europe/Berlin
+	- Changing default behavior of upload handling to stop taking over the upload extension
+	- Adding configuration options for changing this behavior back or add custom File::Temp arguments
+	- Updating documentation.
+
 1.22      2015-01-29 04:51:51+01:00 Europe/Berlin
         - Fix for the fix..... don't ask
 
