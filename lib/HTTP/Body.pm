@@ -482,27 +482,28 @@ sub param_order {
 
 =head1 SUPPORT
 
-Since its original creation this module has been taken over by the Catalyst
-development team. If you need general support using this module:
+=over 4
 
-IRC:
+=item * GitHub Issues
 
-    Join #catalyst on irc.perl.org.
+L<https://github.com/libwww-perl/HTTP-Body/issues>
 
-Mailing Lists:
+=item * MetaCPAN
 
-    http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/catalyst
+L<https://metacpan.org/release/HTTP-Body>
 
-If you want to contribute patches, these will be your
-primary contact points:
+=item * Source Code
 
-IRC:
+L<https://github.com/libwww-perl/HTTP-Body>
 
-    Join #catalyst-dev on irc.perl.org.
+=item * IRC
 
-Mailing Lists:
+C<#catalyst> on C<irc.perl.org> for users, C<#catalyst-dev> for contributors
 
-    http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/catalyst-dev
+=back
+
+Note: This project was formerly hosted on the Shadowcat Systems git server.
+The repository has moved to L<GitHub|https://github.com/libwww-perl/HTTP-Body>.
 
 =head1 AUTHOR
 

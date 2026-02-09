@@ -1,6 +1,11 @@
 This file documents the revision history for Perl extension HTTP::Body.
 
 {{$NEXT}}
+	- Moved repository from Shadowcat git to GitHub (libwww-perl/HTTP-Body)
+	- Updated all metadata resources to point to GitHub
+	- Fixed prerequisites: moved Digest::MD5 to test deps, changed HTTP::Headers to HTTP::Message
+	- Added README.md for GitHub
+	- Updated support section in documentation
 
 1.23      2024-03-30 04:27:56+01:00 Europe/Berlin
 	- Changing default behavior of upload handling to stop taking over the upload extension
