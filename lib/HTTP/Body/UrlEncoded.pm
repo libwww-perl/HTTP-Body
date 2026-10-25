@@ -52,8 +52,8 @@ sub spin {
         next unless defined $name;
         next unless defined $value;
         
-        $name  =~ s/$DECODE/$hex_chr{$1}/gs;
-        $value =~ s/$DECODE/$hex_chr{$1}/gs;
+        $name  =~ s/$DECODE/$hex_chr{ uc $1 }/gs;
+        $value =~ s/$DECODE/$hex_chr{ uc $1 }/gs;
 
         $self->param( $name, $value );
     }
