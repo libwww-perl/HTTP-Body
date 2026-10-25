@@ -102,6 +102,14 @@ special default in our module.
 In this hash you can add up custom settings for the L<File::Temp> invokation.
 Those override every other setting.
 
+=item $HTTP::Body::MultiPart::max_header_size
+
+=item $HTTP::Body::MultiPart::max_header_lines
+
+The largest header block a multipart part may have, in bytes and in lines; a
+larger one makes add croak.  The defaults are 32768 and 100; 0 or undef
+disables a limit.
+
 =back
 
 =head1 METHODS

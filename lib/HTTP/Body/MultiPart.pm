@@ -165,17 +165,30 @@ sub parse_boundary {
 
 =cut
 
+our $max_header_size  = 32 * 1024;
+our $max_header_lines = 100;
+
 sub parse_header {
     my $self = shift;
 
     my $crlf  = $self->crlf;
     my $index = index( $self->{buffer}, $crlf . $crlf );
 
+    # Without the blank line yet, the last 3 bytes may be its start.
+    my $size = $index >= 0 ? $index : length( $self->{buffer} ) - 3;
+    if ( $max_header_size && $size > $max_header_size ) {
+        Carp::croak("Multipart part header exceeds $max_header_size bytes");
+    }
+
     unless ( $index >= 0 ) {
         return 0;
     }
 
     my $header = substr( $self->{buffer}, 0, $index );
+
+    if ( $max_header_lines && ( $header =~ tr/\n// ) >= $max_header_lines ) {
+        Carp::croak("Multipart part header exceeds $max_header_lines lines");
+    }
 
     substr( $self->{buffer}, 0, $index + 4, '' );
 
