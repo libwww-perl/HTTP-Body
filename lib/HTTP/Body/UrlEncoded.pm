@@ -6,6 +6,8 @@ use bytes;
 
 our $DECODE = qr/%([0-9a-fA-F]{2})/;
 
+our $max_params = 1000;
+
 our %hex_chr;
 
 for my $num ( 0 .. 255 ) {
@@ -44,6 +46,10 @@ sub spin {
     
     # Note: s/// appears faster than tr///
     $self->{buffer} =~ s/\+/ /g;
+
+    if ( $max_params && ( $self->{buffer} =~ tr/&;// ) >= $max_params ) {
+        Carp::croak("Too many parameters in request body (limit $max_params)");
+    }
 
     for my $pair ( split( /[&;](?:\s+)?/, $self->{buffer} ) ) {
 

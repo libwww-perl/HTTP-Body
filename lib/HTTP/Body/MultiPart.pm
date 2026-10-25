@@ -140,10 +140,16 @@ sub parse_preamble {
 
 =cut
 
+our $max_parts = 1000;
+
 sub parse_boundary {
     my $self = shift;
 
     if ( index( $self->{buffer}, $self->delimiter_begin . $self->crlf ) == 0 ) {
+
+        if ( $max_parts && ++$self->{part_count} > $max_parts ) {
+            Carp::croak("Too many parts in multipart body (limit $max_parts)");
+        }
 
         substr( $self->{buffer}, 0, length( $self->delimiter_begin ) + 2, '' );
         $self->{part}  = {};

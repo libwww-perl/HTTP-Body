@@ -110,6 +110,14 @@ The largest header block a multipart part may have, in bytes and in lines; a
 larger one makes add croak.  The defaults are 32768 and 100; 0 or undef
 disables a limit.
 
+=item $HTTP::Body::MultiPart::max_parts
+
+=item $HTTP::Body::UrlEncoded::max_params
+
+The largest number of parts in a multipart body, and of fields in a urlencoded
+body (counted as C<&> and C<;> separators, empty fields included); more make
+add croak.  The default for both is 1000; 0 or undef disables the limit.
+
 =back
 
 =head1 METHODS
