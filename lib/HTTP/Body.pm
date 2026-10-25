@@ -70,7 +70,8 @@ L<Jedi>.
 When parsing multipart bodies, temporary files are created to store any
 uploaded files.  You must delete these temporary files yourself after
 processing them, or set $body->cleanup(1) to automatically delete them at
-DESTROY-time.
+DESTROY-time.  The temporary file of a file part that is still incomplete
+at DESTROY-time is never returned by upload, so it is always deleted.
 
 With version 1.23, we have changed the basic behavior of how temporary files
 are prepared for uploads.  The extension of the file is no longer transferred
@@ -147,6 +148,7 @@ sub new {
         state          => 'buffering',
         upload         => {},
         part_data      => {},
+        owner          => _owner(),
         tmpdir         => File::Spec->tmpdir(),
     };
 
@@ -155,9 +157,21 @@ sub new {
     return $self->init;
 }
 
+# A forked child or a new thread gets a copy of the object, not of the upload.
+sub _owner {
+    return $$ . ' ' . ( $INC{'threads.pm'} ? threads->tid : 0 );
+}
+
 sub DESTROY {
     my $self = shift;
-    
+
+    # An unfinished file part is not in upload(); at global destruction its fh may be gone.
+    if ( $self->{owner} eq _owner() && $self->{part} && exists $self->{part}->{fh} ) {
+        my $fh = delete $self->{part}->{fh};
+        close $fh if $fh;
+        unlink $self->{part}->{tempname};
+    }
+
     if ( $self->{cleanup} ) {
         my @temps = ();
         for my $upload ( values %{ $self->{upload} } ) {
