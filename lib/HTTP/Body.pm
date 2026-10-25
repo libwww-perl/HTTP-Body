@@ -206,18 +206,23 @@ length before adding self.
 
 =cut
 
+# chunk-size [ chunk-ext ] CRLF.  The atomic group keeps the size digits from
+# backtracking into the rest of the line, which took quadratic time on a line
+# that does not end in CRLF.
+my $chunk_size_line = qr/^(?>([\da-fA-F]+))[^\n]*\x0D\x0A/;
+
 sub add {
     my $self = shift;
-    
+
     if ( $self->{chunked} ) {
         $self->{chunk_buffer} .= $_[0];
-        
-        while ( $self->{chunk_buffer} =~ m/^([\da-fA-F]+).*\x0D\x0A/ ) {
+
+        while ( $self->{chunk_buffer} =~ $chunk_size_line ) {
             my $chunk_len = hex($1);
-            
+
             if ( $chunk_len == 0 ) {
                 # Strip chunk len
-                $self->{chunk_buffer} =~ s/^([\da-fA-F]+).*\x0D\x0A//;
+                $self->{chunk_buffer} =~ s/$chunk_size_line//;
                 
                 # End of data, there may be trailing headers
                 if (  my ($headers) = $self->{chunk_buffer} =~ m/(.*)\x0D\x0A/s ) {
@@ -236,7 +241,7 @@ sub add {
                 # Make sure we have the whole chunk in the buffer (+CRLF)
                 if ( length( $self->{chunk_buffer} ) >= $chunk_len ) {
                     # Strip chunk len
-                    $self->{chunk_buffer} =~ s/^([\da-fA-F]+).*\x0D\x0A//;
+                    $self->{chunk_buffer} =~ s/$chunk_size_line//;
                     
                     # Pull chunk data out of chunk buffer into real buffer
                     $self->{buffer} .= substr $self->{chunk_buffer}, 0, $chunk_len, '';
