@@ -122,6 +122,9 @@ sub parse_preamble {
     my $index = index( $self->{buffer}, $self->boundary_begin );
 
     unless ( $index >= 0 ) {
+        # keep only what may be the start of a dash-boundary split across chunks
+        my $keep = length( $self->boundary_begin ) - 1;
+        substr( $self->{buffer}, 0, -$keep, '' ) if length( $self->{buffer} ) > $keep;
         return 0;
     }
 
@@ -156,6 +159,16 @@ sub parse_boundary {
         $self->{state} = 'done';
 
         return 0;
+    }
+
+    if ( length( $self->{buffer} ) >= length( $self->delimiter_end ) + 2 ) {
+        # a close delimiter ends the body whatever follows it (padding, epilogue)
+        unless ( index( $self->{buffer}, $self->delimiter_end ) == 0 ) {
+            Carp::croak('Invalid multipart boundary delimiter');
+        }
+        substr( $self->{buffer}, 0, length( $self->delimiter_end ), '' );
+        $self->{part}  = {};
+        $self->{state} = 'done';
     }
 
     return 0;
