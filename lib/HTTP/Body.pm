@@ -564,11 +564,15 @@ The repository has moved to L<GitHub|https://github.com/libwww-perl/HTTP-Body>.
 
 =head1 AUTHOR
 
-Christian Hansen, C<chansen@cpan.org>
+Christian Hansen, C<christian.hansen@mac.com>
 
-Sebastian Riedel, C<sri@cpan.org>
+Sebastian Riedel, C<kraihx@googlemail.com>
 
 Andy Grundman, C<andy@hybridized.org>
+
+=head1 MAINTAINER
+
+Torsten Raudssus, C<torsten@raudssus.de>
 
 =head1 CONTRIBUTORS
 
@@ -577,8 +581,6 @@ Simon Elliott C<cpan@papercreatures.com>
 Kent Fredric C<kentnl@cpan.org>
 
 Christian Walde C<walde.christian@gmail.com>
-
-Torsten Raudssus C<torsten@raudssus.de>
 
 =head1 LICENSE
 

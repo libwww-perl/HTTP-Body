@@ -170,10 +170,13 @@ $HTTP::Body::MultiPart::file_temp_template = 'uploadXXXXXX';
 
 ## Authors
 
-- Christian Hansen `<chansen@cpan.org>`
-- Sebastian Riedel `<sri@cpan.org>`
+- Christian Hansen `<christian.hansen@mac.com>`
+- Sebastian Riedel `<kraihx@googlemail.com>`
 - Andy Grundman `<andy@hybridized.org>`
-- Torsten Raudssus `<getty@cpan.org>`
+
+## Maintainer
+
+- Torsten Raudssus `<torsten@raudssus.de>`
 
 ## Contributors
 
