@@ -302,6 +302,10 @@ sub handler {
         my ($filename)  = $disposition =~ / filename="?([^\"]*)"?/;
         # Need to match empty filenames above, so this part is flagged as an upload type
 
+        # A NUL in the filename truncates the path for anything downstream that
+        # hands it to the C layer, so strip it before the name is used or stored.
+        $filename =~ s/\0//g if defined $filename;
+
         $part->{name} = $name;
 
         if ( defined $filename ) {
@@ -324,14 +328,19 @@ sub handler {
     }
 
     if ( $part->{fh} && ( my $length = length( $part->{data} ) ) ) {
-        $part->{fh}->write( substr( $part->{data}, 0, $length, '' ), $length );
+        $part->{fh}->write( substr( $part->{data}, 0, $length, '' ), $length )
+            or Carp::croak("Can't write to temporary file: $!");
     }
 
     if ( $part->{done} ) {
 
         if ( exists $part->{filename} ) {
             if ( $part->{filename} ne "" ) {
-                $part->{fh}->close if defined $part->{fh};
+                # A buffered write error often surfaces only here, at close.
+                if ( defined $part->{fh} ) {
+                    $part->{fh}->close
+                        or Carp::croak("Can't close temporary file: $!");
+                }
 
                 delete @{$part}{qw[ data done fh ]};
 
