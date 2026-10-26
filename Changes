@@ -37,6 +37,8 @@ This file documents the revision history for Perl extension HTTP::Body.
 	- Fixed prerequisites: moved Digest::MD5 to test deps, changed HTTP::Headers to HTTP::Message
 	- Added README.md for GitHub
 	- Updated support section in documentation
+	- Moved the POD, POD coverage and Perl::Critic tests to xt/release, so
+	  they run on every release instead of being skipped
 
 1.23      2024-03-30 04:27:56+01:00 Europe/Berlin
 	- Changing default behavior of upload handling to stop taking over the upload extension
