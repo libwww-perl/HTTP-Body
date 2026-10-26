@@ -22,6 +22,11 @@ This file documents the revision history for Perl extension HTTP::Body.
 	- SECURITY: a chunked body is now framed independently of where the
 	  reads feeding add() fall; a read that split a chunk could leave the
 	  parser never reaching 'done', hanging a server that reads until done
+	- RT#105021: temp-file write errors in MultiPart and OctetStream are
+	  reported (croak) instead of silently truncating the stored body
+	- RT#123615: a NUL byte in a multipart filename is stripped
+	- RT#84004: the temp file of an aborted upload is cleaned up (see
+	  CVE-2026-116132 above)
 	- INCOMPATIBLE: add() now croaks when one of the new limits is exceeded.
 	  Raise the variable, or set it to 0 to disable that limit, if your
 	  forms need more. See NOTES in HTTP::Body.
