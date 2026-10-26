@@ -112,24 +112,6 @@ while (my $chunk = get_next_chunk()) {
 my $trailing = $body->trailing_headers;
 ```
 
-## Multipart Upload Configuration
-
-Since version 1.23, temporary files for uploads use the `.upload` extension by default instead of preserving the original file extension. This behavior can be customized:
-
-```perl
-# Restore old behavior (use original file extension)
-$HTTP::Body::MultiPart::file_temp_suffix = undef;
-
-# Custom File::Temp template
-$HTTP::Body::MultiPart::file_temp_template = 'uploadXXXXXX';
-
-# Custom File::Temp parameters
-%HTTP::Body::MultiPart::file_temp_parameters = (
-    UNLINK => 0,
-    DIR    => '/my/upload/dir',
-);
-```
-
 ## API
 
 | Method | Description |
@@ -149,6 +131,35 @@ $HTTP::Body::MultiPart::file_temp_template = 'uploadXXXXXX';
 | `cleanup([$bool])` | Enable auto-deletion of temp files at DESTROY. |
 | `state` | Current parser state. |
 | `length` | Bytes read so far. |
+
+## Limits
+
+To bound resource use on hostile input, `add()` enforces limits and croaks when one is exceeded. Raise a limit for larger forms, or set it to `0` to disable it:
+
+| Variable | Default | Limits |
+|---|---|---|
+| `$HTTP::Body::MultiPart::max_parts` | 1000 | parts in a multipart body |
+| `$HTTP::Body::UrlEncoded::max_params` | 1000 | fields in a urlencoded body |
+| `$HTTP::Body::MultiPart::max_header_size` | 32768 | bytes in a part's header block |
+| `$HTTP::Body::MultiPart::max_header_lines` | 100 | lines in a part's header block |
+
+## Configuring Upload Temporary Files
+
+By default, temporary files for uploads use the `.upload` extension instead of the uploaded file's own extension. This can be customized:
+
+```perl
+# Keep the uploaded file's own extension (behavior before 1.23)
+$HTTP::Body::MultiPart::file_temp_suffix = undef;
+
+# Custom File::Temp template
+$HTTP::Body::MultiPart::file_temp_template = 'uploadXXXXXX';
+
+# Custom File::Temp parameters
+%HTTP::Body::MultiPart::file_temp_parameters = (
+    UNLINK => 0,
+    DIR    => '/my/upload/dir',
+);
+```
 
 ## Support
 

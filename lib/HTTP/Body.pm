@@ -73,42 +73,13 @@ processing them, or set $body->cleanup(1) to automatically delete them at
 DESTROY-time.  The temporary file of a file part that is still incomplete
 at DESTROY-time is never returned by upload, so it is always deleted.
 
-With version 1.23, we have changed the basic behavior of how temporary files
-are prepared for uploads.  The extension of the file is no longer transferred
-to the temporary file, the extension will always be C<.upload>.  We have also
-introduced variables that make it possible to set the behavior as required.
+=head2 Limits
+
+To stop hostile input from exhausting memory or CPU, add() enforces a few
+limits and croaks when one is exceeded.  Each is a package variable you can
+raise to suit your forms, or set to 0 (or undef) to disable.
 
 =over 4
-
-=item $HTTP::Body::MultiPart::file_temp_suffix
-
-This is the extension that is given to all multipart files. The default
-setting here is C<.upload>.  If you want the old behavior from before version
-1.23, simply undefine the value here.
-
-=item $HTTP::Body::MultiPart::basename_regexp
-
-This is the regexp used to determine out the file extension.  This is of
-course no longer necessary, unless you undefine
-C<HTTP::Body::MultiPart::file_temp_suffix>.
-
-=item $HTTP::Body::MultiPart::file_temp_template
-
-This gets passed through to the L<File::Temp> TEMPLATE parameter.  There is no
-special default in our module.
-
-=item %HTTP::Body::MultiPart::file_temp_parameters
-
-In this hash you can add up custom settings for the L<File::Temp> invokation.
-Those override every other setting.
-
-=item $HTTP::Body::MultiPart::max_header_size
-
-=item $HTTP::Body::MultiPart::max_header_lines
-
-The largest header block a multipart part may have, in bytes and in lines; a
-larger one makes add croak.  The defaults are 32768 and 100; 0 or undef
-disables a limit.
 
 =item $HTTP::Body::MultiPart::max_parts
 
@@ -116,7 +87,14 @@ disables a limit.
 
 The largest number of parts in a multipart body, and of fields in a urlencoded
 body (counted as C<&> and C<;> separators, empty fields included); more make
-add croak.  The default for both is 1000; 0 or undef disables the limit.
+add croak.  The default for both is 1000.
+
+=item $HTTP::Body::MultiPart::max_header_size
+
+=item $HTTP::Body::MultiPart::max_header_lines
+
+The largest header block a multipart part may have, in bytes and in lines; a
+larger one makes add croak.  The defaults are 32768 and 100.
 
 =back
 
@@ -525,6 +503,37 @@ Returns the array ref of the param keys in the order how they appeared on the bo
 sub param_order {
     return shift->{param_order};
 }
+
+=back
+
+=head1 CONFIGURING UPLOAD TEMPORARY FILES
+
+By default, the temporary file that holds an uploaded file is given the
+extension C<.upload> instead of the extension of the uploaded file itself.
+The following package variables control how these temporary files are created.
+
+=over 4
+
+=item $HTTP::Body::MultiPart::file_temp_suffix
+
+The extension given to every multipart upload file; the default is C<.upload>.
+Set it to undef to keep the extension of the uploaded file instead, as releases
+before 1.23 did.
+
+=item $HTTP::Body::MultiPart::basename_regexp
+
+The regexp used to work out the uploaded file's extension.  It only matters
+when C<file_temp_suffix> is undefined.
+
+=item $HTTP::Body::MultiPart::file_temp_template
+
+Passed through to the L<File::Temp> TEMPLATE parameter.  There is no special
+default in our module.
+
+=item %HTTP::Body::MultiPart::file_temp_parameters
+
+Extra settings for the L<File::Temp> invocation.  These override every other
+setting.
 
 =back
 
