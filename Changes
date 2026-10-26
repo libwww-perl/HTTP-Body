@@ -1,6 +1,28 @@
 This file documents the revision history for Perl extension HTTP::Body.
 
 {{$NEXT}}
+	- SECURITY: the suffix of an upload's filename is worked out from its
+	  last 255 bytes only, and only when $file_temp_suffix is unset; a
+	  filename of many dots ending in a backslash made the default
+	  $basename_regexp take time quadratic in its length (7 s per part at
+	  the 32 KiB header limit, once per part) in the default configuration
+	- SECURITY: a chunked body is framed line by line with a limit on the
+	  chunk-size line ($HTTP::Body::max_chunk_line_size, 1024 bytes), chunk
+	  data is passed on as it arrives instead of being held until the chunk
+	  is complete, malformed framing (a line that is no chunk-size line, a
+	  size that does not fit an integer, chunk data not followed by CRLF)
+	  croaks instead of buffering forever, and nothing after the last chunk
+	  or after the body parser is done is kept
+	- XFormsMultipart: a part other than the start part now gets its
+	  temporary file and the NUL strip of RT#123615 like any upload; it used
+	  to be returned by upload without a tempname, its data dropped
+	- parse_header: a continuation line at the start of a part's header
+	  block is dropped instead of dying, and a line that is no header field
+	  is dropped instead of being stored under a made-up field name
+	- add: the caller's buffer is no longer modified in place when it
+	  exceeds the Content-Length, so a read-only value is accepted
+
+1.24      2026-10-26 18:28:01+01:00 Europe/Berlin
 	- SECURITY, CVE-2026-116131: urlencoded bodies are limited to
 	  $HTTP::Body::UrlEncoded::max_params fields and multipart bodies to
 	  $HTTP::Body::MultiPart::max_parts parts (1000 each); reported and
