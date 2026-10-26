@@ -1,0 +1,4 @@
+# Keep the test fixtures byte-exact. They carry significant CRLFs, and
+# core.autocrlf on a Windows checkout would rewrite the line endings and
+# break t/06octetstream.t (and other byte-exact comparisons).
+t/data/** -text
