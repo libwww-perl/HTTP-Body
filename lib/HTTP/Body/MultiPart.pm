@@ -312,11 +312,22 @@ sub handler {
             $part->{filename} = $filename;
 
             if ( $filename ne "" ) {
-                my $basename = (File::Spec->splitpath($filename))[2];
-                my $suffix = $basename =~ $basename_regexp ? $1 : q{};
+                my $suffix = $file_temp_suffix;
+
+                unless ($suffix) {
+                    my $basename = (File::Spec->splitpath($filename))[2];
+
+                    # A suffix can be no longer than a file name, so the match
+                    # only needs the end of a long basename.  On the whole of a
+                    # hostile one the regexp backtracks in time quadratic in its
+                    # length: seconds per part, once for every part.
+                    $basename = substr( $basename, -255 ) if length($basename) > 255;
+
+                    $suffix = $basename =~ $basename_regexp ? $1 : q{};
+                }
 
                 my $fh = File::Temp->new(
-                    UNLINK => 0, DIR => $self->tmpdir, SUFFIX => ($file_temp_suffix||$suffix),
+                    UNLINK => 0, DIR => $self->tmpdir, SUFFIX => $suffix,
                     ( $file_temp_template ? ( TEMPLATE => $file_temp_template ) : () ),
                     %file_temp_parameters,
                 );

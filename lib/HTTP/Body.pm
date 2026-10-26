@@ -523,7 +523,8 @@ before 1.23 did.
 =item $HTTP::Body::MultiPart::basename_regexp
 
 The regexp used to work out the uploaded file's extension.  It only matters
-when C<file_temp_suffix> is undefined.
+when C<file_temp_suffix> is undefined, and is matched against the last 255
+bytes of the uploaded file's basename, which is as long as a suffix can be.
 
 =item $HTTP::Body::MultiPart::file_temp_template
 
