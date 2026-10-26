@@ -307,15 +307,17 @@ sub add {
     my $cl = $self->content_length;
 
     if ( defined $_[0] ) {
-        $self->{length} += length( $_[0] );
-        
+        # A copy: the caller's buffer is left alone, and may be read-only.
+        my $data = $_[0];
+        $self->{length} += length($data);
+
         # Don't allow buffer data to exceed content-length
         if ( $self->{length} > $cl ) {
-            $_[0] = substr $_[0], 0, $cl - $self->{length};
+            $data = substr $data, 0, $cl - $self->{length};
             $self->{length} = $cl;
         }
-        
-        $self->{buffer} .= $_[0];
+
+        $self->{buffer} .= $data;
     }
 
     unless ( $self->state eq 'done' ) {

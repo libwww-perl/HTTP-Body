@@ -71,7 +71,9 @@ sub handler {
     my $contentid = $part->{headers}{'Content-ID'};
     $contentid =~ s/^.*[\<\"]//;
     $contentid =~ s/[\>\"].*$//;
-    
+    # It names the part and its file: a NUL would truncate that downstream.
+    $contentid =~ s/\0//g;
+
     if ( $contentid eq $self->start ) {
         $part->{name} = 'XForms:Model';
         if ($part->{done}) {

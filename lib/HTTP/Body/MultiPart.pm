@@ -214,7 +214,8 @@ sub parse_header {
     my @headers;
     for ( split /$crlf/, $header ) {
         if (s/^[ \t]+//) {
-            $headers[-1] .= $_;
+            # a continuation line; with no line to continue it is dropped
+            $headers[-1] .= $_ if @headers;
         }
         else {
             push @headers, $_;
@@ -225,7 +226,9 @@ sub parse_header {
 
     for my $header (@headers) {
 
-        $header =~ s/^($token):[\t ]*//;
+        # A line that is no header field is dropped: without a match $1 would
+        # still hold whatever the last successful match captured.
+        next unless $header =~ s/^($token):[\t ]*//;
 
         ( my $field = $1 ) =~ s/\b(\w)/uc($1)/eg;
 
@@ -302,39 +305,41 @@ sub handler {
         my ($filename)  = $disposition =~ / filename="?([^\"]*)"?/;
         # Need to match empty filenames above, so this part is flagged as an upload type
 
+        $part->{name}     = $name;
+        $part->{filename} = $filename if defined $filename;
+    }
+
+    # A file part gets its temporary file on the first call, also when a
+    # subclass has named the part and set its filename itself.
+    if ( defined $part->{filename} && !exists $part->{tempname} ) {
+
         # A NUL in the filename truncates the path for anything downstream that
         # hands it to the C layer, so strip it before the name is used or stored.
-        $filename =~ s/\0//g if defined $filename;
+        $part->{filename} =~ s/\0//g;
 
-        $part->{name} = $name;
+        if ( $part->{filename} ne "" ) {
+            my $suffix = $file_temp_suffix;
 
-        if ( defined $filename ) {
-            $part->{filename} = $filename;
+            unless ($suffix) {
+                my $basename = (File::Spec->splitpath($part->{filename}))[2];
 
-            if ( $filename ne "" ) {
-                my $suffix = $file_temp_suffix;
+                # A suffix can be no longer than a file name, so the match
+                # only needs the end of a long basename.  On the whole of a
+                # hostile one the regexp backtracks in time quadratic in its
+                # length: seconds per part, once for every part.
+                $basename = substr( $basename, -255 ) if length($basename) > 255;
 
-                unless ($suffix) {
-                    my $basename = (File::Spec->splitpath($filename))[2];
-
-                    # A suffix can be no longer than a file name, so the match
-                    # only needs the end of a long basename.  On the whole of a
-                    # hostile one the regexp backtracks in time quadratic in its
-                    # length: seconds per part, once for every part.
-                    $basename = substr( $basename, -255 ) if length($basename) > 255;
-
-                    $suffix = $basename =~ $basename_regexp ? $1 : q{};
-                }
-
-                my $fh = File::Temp->new(
-                    UNLINK => 0, DIR => $self->tmpdir, SUFFIX => $suffix,
-                    ( $file_temp_template ? ( TEMPLATE => $file_temp_template ) : () ),
-                    %file_temp_parameters,
-                );
-
-                $part->{fh}       = $fh;
-                $part->{tempname} = $fh->filename;
+                $suffix = $basename =~ $basename_regexp ? $1 : q{};
             }
+
+            my $fh = File::Temp->new(
+                UNLINK => 0, DIR => $self->tmpdir, SUFFIX => $suffix,
+                ( $file_temp_template ? ( TEMPLATE => $file_temp_template ) : () ),
+                %file_temp_parameters,
+            );
+
+            $part->{fh}       = $fh;
+            $part->{tempname} = $fh->filename;
         }
     }
 
