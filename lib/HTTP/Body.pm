@@ -217,38 +217,51 @@ sub add {
     if ( $self->{chunked} ) {
         $self->{chunk_buffer} .= $_[0];
 
-        while ( $self->{chunk_buffer} =~ $chunk_size_line ) {
-            my $chunk_len = hex($1);
+        # Stop once the zero-length chunk has ended the chunked stream: any
+        # trailing bytes (e.g. trailing headers) must not be reparsed as
+        # further chunks.  This is separate from the body parser's own state,
+        # which for multipart reaches 'done' at the closing boundary, before
+        # the zero chunk that records the final content length.
+        while ( !$self->{chunk_eof}
+            && $self->{chunk_buffer} =~ $chunk_size_line ) {
+            my $chunk_len  = hex($1);
+            # Length of the chunk-size line itself; the pattern is anchored at ^.
+            my $header_len = $+[0];
 
             if ( $chunk_len == 0 ) {
                 # Strip chunk len
-                $self->{chunk_buffer} =~ s/$chunk_size_line//;
-                
+                substr( $self->{chunk_buffer}, 0, $header_len, '' );
+
                 # End of data, there may be trailing headers
                 if (  my ($headers) = $self->{chunk_buffer} =~ m/(.*)\x0D\x0A/s ) {
                     if ( my $message = HTTP::Message->parse( $headers ) ) {
                         $self->{trailing_headers} = $message->headers;
                     }
                 }
-                
+
                 $self->{chunk_buffer} = '';
-                
+                $self->{chunk_eof}    = 1;
+
                 # Set content_length equal to the amount of data we read,
                 # so the spin methods can finish up.
                 $self->{content_length} = $self->{length};
             }
             else {
-                # Make sure we have the whole chunk in the buffer (+CRLF)
-                if ( length( $self->{chunk_buffer} ) >= $chunk_len ) {
+                # Make sure we have the whole chunk body plus its trailing CRLF
+                # beyond the chunk-size line before we consume it. The old test
+                # measured the whole buffer, size line included, so a read that
+                # split a chunk left the parser taking it short and reparsing the
+                # leftover bytes as the next chunk-size line (never completing).
+                if ( length( $self->{chunk_buffer} ) >= $header_len + $chunk_len + 2 ) {
                     # Strip chunk len
-                    $self->{chunk_buffer} =~ s/$chunk_size_line//;
-                    
+                    substr( $self->{chunk_buffer}, 0, $header_len, '' );
+
                     # Pull chunk data out of chunk buffer into real buffer
                     $self->{buffer} .= substr $self->{chunk_buffer}, 0, $chunk_len, '';
-                
+
                     # Strip remaining CRLF
                     $self->{chunk_buffer} =~ s/^\x0D\x0A//;
-                
+
                     $self->{length} += $chunk_len;
                 }
                 else {
