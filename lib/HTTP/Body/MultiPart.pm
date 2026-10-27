@@ -290,7 +290,11 @@ sub parse_body {
 
 =cut
 
-our $basename_regexp = qr/[^.]+(\.[^\\\/]+)$/;
+# The default is also kept here: while $basename_regexp still holds it, the
+# suffix is found by _default_suffix, a string search with the same result.
+my $default_basename_regexp = qr/[^.]+(\.[^\\\/]+)$/;
+
+our $basename_regexp = $default_basename_regexp;
 our $file_temp_suffix = '.upload';
 our $file_temp_template;
 our %file_temp_parameters;
@@ -323,13 +327,18 @@ sub handler {
             unless ($suffix) {
                 my $basename = (File::Spec->splitpath($part->{filename}))[2];
 
-                # A suffix can be no longer than a file name, so the match
-                # only needs the end of a long basename.  On the whole of a
-                # hostile one the regexp backtracks in time quadratic in its
-                # length: seconds per part, once for every part.
+                # A suffix can be no longer than a file name, so only the end
+                # of a long basename is looked at.  On the whole of a hostile
+                # one a regexp like the default backtracks in time quadratic
+                # in its length: seconds per part, once for every part.
                 $basename = substr( $basename, -255 ) if length($basename) > 255;
 
-                $suffix = $basename =~ $basename_regexp ? $1 : q{};
+                if ( ref $basename_regexp && $basename_regexp == $default_basename_regexp ) {
+                    $suffix = _default_suffix($basename);
+                }
+                else {
+                    $suffix = $basename =~ $basename_regexp ? $1 : q{};
+                }
             }
 
             my $fh = File::Temp->new(
@@ -370,6 +379,27 @@ sub handler {
             $self->part_data( $part->{name}, $part )
         }
     }
+}
+
+# The suffix the default $basename_regexp captures, found without a regexp,
+# in time linear in the basename's length.  It starts at the first dot after
+# the last slash or backslash that follows a byte other than a dot, and runs
+# to the end; a dot that is the last byte gives no suffix.
+sub _default_suffix {
+    my ($basename) = @_;
+
+    my $last = length($basename) - 1;
+    my $dot  = rindex( $basename, '/' );
+    my $back = rindex( $basename, '\\' );
+    $dot = $back if $back > $dot;
+
+    while ( ( $dot = index( $basename, '.', $dot + 1 ) ) >= 0 ) {
+        return q{} if $dot == $last;
+        return substr( $basename, $dot )
+            if $dot > 0 && substr( $basename, $dot - 1, 1 ) ne '.';
+    }
+
+    return q{};
 }
 
 =back

@@ -2,11 +2,12 @@ This file documents the revision history for Perl extension HTTP::Body.
 
 {{$NEXT}}
 	- SECURITY, CVE-2026-117500: the suffix of an upload's filename is
-	  worked out from its last 255 bytes only, and only when
-	  $file_temp_suffix is unset; a filename of many dots ending in a
-	  backslash made the default $basename_regexp take time quadratic in
-	  its length (7 s per part at the 32 KiB header limit, once per part)
-	  in the default configuration
+	  worked out from its last 255 bytes only, only when $file_temp_suffix
+	  is unset, and for the default $basename_regexp by a string search
+	  instead of the regexp; a filename of many dots ending in a backslash
+	  made the default $basename_regexp take time quadratic in its length
+	  (7 s per part at the 32 KiB header limit, once per part) in the
+	  default configuration
 	- SECURITY, CVE-2026-117501: a chunked body is framed line by line with
 	  a limit on the chunk-size line ($HTTP::Body::max_chunk_line_size,
 	  1024 bytes), chunk data is passed on as it arrives instead of being

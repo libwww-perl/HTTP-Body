@@ -575,6 +575,8 @@ before 1.23 did.
 The regexp used to work out the uploaded file's extension.  It only matters
 when C<file_temp_suffix> is undefined, and is matched against the last 255
 bytes of the uploaded file's basename, which is as long as a suffix can be.
+The default, C<qr/[^.]+(\.[^\\\/]+)$/>, is not run as a regexp: as long as the
+variable still holds it, a string search with the same result is used.
 
 =item $HTTP::Body::MultiPart::file_temp_template
 
