@@ -216,7 +216,7 @@ framing of a chunked body is malformed.
 # chunk-size [ chunk-ext ] CRLF, matched against one line at a time.  The
 # atomic group keeps the size digits from backtracking into the rest of the
 # line, and the line length limit bounds what the rest can cost.
-my $chunk_size_line = qr/^(?>([\da-fA-F]+))[^\n]*\x0D\x0A\z/;
+my $chunk_size_line = qr/^(?>([0-9a-fA-F]+))[^\n]*\x0D\x0A\z/;
 
 our $max_chunk_line_size = 1024;
 our $max_trailer_size    = 32 * 1024;
