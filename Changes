@@ -1,6 +1,8 @@
 This file documents the revision history for Perl extension HTTP::Body.
 
 {{$NEXT}}
+
+1.25      2026-11-05 18:47:08+01:00 Europe/Berlin
 	- SECURITY, CVE-2026-117500: the suffix of an upload's filename is
 	  worked out from its last 255 bytes only, only when $file_temp_suffix
 	  is unset, and for the default $basename_regexp by a string search
